@@ -11,7 +11,7 @@ class Servicio(models.Model):
     TIPO_CHOICES = (
         ("Manicure", "Manicure"),
         ("Pedicure", "Pedicure"),
-        ("Uñas acrílicas", "Uñas Acrílicas"),
+        ("Retiros", "Retiros"),
     )
 
     nombre = models.CharField(max_length=40, null=False)
