@@ -22,7 +22,7 @@ from utils.permisos import TienePermisoModulo
 class CitaVentaViewSet(viewsets.ModelViewSet):
     serializer_class = CitaVentaSerializer
     queryset = CitaVenta.objects.all()
-    permission_classes = [TienePermisoModulo("Citas")];
+    # permission_classes = [TienePermisoModulo("Citas")];
 
     def get_queryset(self):
         queryset = CitaVenta.objects.all()
