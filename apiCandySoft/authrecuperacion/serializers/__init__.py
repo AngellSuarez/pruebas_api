@@ -1,2 +1,2 @@
-from .solicitar_codigo import SolicitarCodigoSerializer
+from .solicitar_codigo import SolicitudCodigoSerializer
 from .confirmar_codigo import ConfirmacionCodigoSerializer
