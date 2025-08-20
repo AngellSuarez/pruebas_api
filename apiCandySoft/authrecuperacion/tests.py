@@ -1,46 +1,59 @@
-# usuario/tests.py
+# insumo/tests.py
 
-from django.test import TestCase, Client
 from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
 from usuario.models.usuario import Usuario
-from rol.models import Rol
-from usuario.models.cliente import Cliente
-import json
+from rol.models import Rol, Permiso, Permiso_Rol
+from insumo.models import Insumo, Marca
 
-# Create your tests here.
-class RegistroClienteViewTest(TestCase):
+class InsumoAPITestCase(APITestCase):
+
     def setUp(self):
-        self.client = Client()
-        self.rol_cliente = Rol.objects.create(nombre='cliente', descripcion='Rol para clientes')
-        self.url = reverse('register_cliente')
-
-    def test_registro_exitoso(self):
+        # usuario y rol pa autenticar
+        self.rol_admin = Rol.objects.create(nombre='Admin', descripcion='Rol para administradores')
+        self.permiso_insumo = Permiso.objects.create(modulo='Insumo')
+        self.rol_permiso_contiene = Permiso_Rol.objects.create(rol_id = self.rol_admin, permiso_id = self.permiso_insumo)
+        
+        self.user = Usuario.objects.create_user(
+            username='testadmin', 
+            password='testpassword123', 
+            rol_id=self.rol_admin,
+            nombre='Admin',
+            apellido='Test',
+            correo='admin@example.com',
+            tipo_documento='CC',
+            numero_documento='123456789'
+        )
+        
+        # crear una marca ahi toda breve pal insumo
+        self.marca = Marca.objects.create(nombre='TestMarca')
+        
+        # URLs  Insumo API 
+        self.list_create_url = reverse('insumos-list') 
+        
+    #conseguir los tokens    
+    def _get_auth_token(self):
+        login_data = {
+            'username': 'admin@example.com', 
+            'password': 'testpassword123'
+        }
+        response = self.client.post(reverse('token_obtain_pair'), login_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        return response.data['access']
+    
+    def test_create_insumo(self):
+        token = self._get_auth_token()
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+        
         data = {
-            "username": "nuevo_cliente",
-            "nombre": "Nuevo",
-            "apellido": "Cliente",
-            "correo": "nuevo.cliente@gmail.com",
-            "tipo_documento": "CC",
-            "numero_documento": "987654321",
-            "password": "mi_password_segura",
-            "celular": "3111234567"
+            'nombre': 'Lima',
+            'stock': 10,
+            'marca_id': self.marca.id,
         }
         
-        response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
+        response = self.client.post(self.list_create_url, data, format='json')
         
-        self.assertEqual(response.status_code, 201)
-        self.assertIn('tokens', response.json())
-        self.assertEqual(Cliente.objects.count(), 1)
-        self.assertEqual(Usuario.objects.count(), 1)
-        
-    def test_registro_con_datos_faltantes(self):
-
-        data = {
-            "nombre": "Incompleto",
-            "apellido": "Test"
-        }
-        
-        response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
-        
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('correo', response.json())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Insumo.objects.count(), 1)
+        self.assertEqual(Insumo.objects.get().nombre, 'Lima')
