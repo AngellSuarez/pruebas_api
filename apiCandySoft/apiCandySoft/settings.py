@@ -115,17 +115,20 @@ DATABASES = {
 } """
 
 #base de datos 
+db_engine = os.getenv("DB_ENGINE")
+db_options = {}
+if db_engine == "django.db.backends.mysql":
+    db_options["charset"] = "utf8mb4"
+
 DATABASES = {
-    'default':{
-        'ENGINE': os.getenv("DB_ENGINE"),
+    'default': {
+        'ENGINE': db_engine,
         'NAME': os.getenv("DB_NAME"),
         'USER': os.getenv("DB_USER"),
         'PASSWORD': os.getenv("DB_PASSWORD"),
         'HOST': os.getenv("DB_HOST"),
         'PORT': os.getenv("DB_PORT"),
-        'OPTIONS': {
-    'charset' : 'utf8mb4',
-}
+        'OPTIONS': db_options,
     }
 }
 
@@ -201,4 +204,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LANGUAGE_CODE = 'es'
 
-FRONTEND_URL = "http://localhost:5173" 
+FRONTEND_URL = "http://localhost:5173"
