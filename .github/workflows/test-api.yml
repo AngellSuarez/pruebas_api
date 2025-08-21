@@ -1,0 +1,40 @@
+name: Test de la Api en python
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_SETTINGS_MODULE: apiCandySoft.settings
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Configurar y Ejecutar pruebas
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate Django SECRET_KEY
+        run: echo "SECRET_KEY=$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')" >> $GITHUB_ENV
+
+      - name: Run tests
+        env:
+          SECRET_KEY: ${{ env.SECRET_KEY }}
+          DB_ENGINE: django.db.backends.sqlite3
+          DB_NAME: ":memory:"
+        run: |
+          cd apiCandySoft
+          python manage.py test -v 1
