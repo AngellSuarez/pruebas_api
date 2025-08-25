@@ -23,6 +23,7 @@ jsonschema-specifications==2025.4.1
 mysqlclient==2.2.7
 packaging==25.0
 pillow==11.2.1
+psycopg2==2.9.10
 PyJWT==2.9.0
 PySocks==1.7.1
 python-decouple==3.8
